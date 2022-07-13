@@ -3,7 +3,8 @@ const ContactRepository = require('../repositories/ContactRepository');
 class ContactController {
   // Listar todos os registros
   async index(req, res) {
-    const contacts = await ContactRepository.findAll();
+    const { orderBy } = req.query;
+    const contacts = await ContactRepository.findAll(orderBy);
     res.json(contacts);
   }
 
@@ -26,10 +27,15 @@ class ContactController {
 
     const contactExists = await ContactRepository.findByEmail(email);
 
-    if (contactExists) res.status(400).json({ error: 'this email already in use' });
+    if (contactExists) {
+      res.status(400).json({ error: 'this email already in use' });
+    }
 
     const contact = await ContactRepository.create({
-      name, email, phone, category_id,
+      name,
+      email,
+      phone,
+      category_id,
     });
 
     res.json(contact);
@@ -49,10 +55,15 @@ class ContactController {
 
     const emailHasBeenTaken = await ContactRepository.findByEmail(email);
 
-    if (emailHasBeenTaken && emailHasBeenTaken.id !== id) res.status(400).json({ error: 'this email already in use' });
+    if (emailHasBeenTaken && emailHasBeenTaken.id !== id) {
+      res.status(400).json({ error: 'this email already in use' });
+    }
 
     const contact = await ContactRepository.update(id, {
-      name, email, phone, category_id,
+      name,
+      email,
+      phone,
+      category_id,
     });
 
     res.json(contact);
@@ -61,9 +72,6 @@ class ContactController {
   // Deletar um registro
   async delete(req, res) {
     const { id } = req.params;
-    const contact = await ContactRepository.findById(id);
-
-    if (!contact) return res.status(400).json({ error: 'user not found' });
 
     await ContactRepository.delete(id);
     res.sendStatus(204);
